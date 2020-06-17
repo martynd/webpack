@@ -811,15 +811,15 @@ chunk a.js (a) 22 bytes [entry] [rendered]
 `;
 
 exports[`StatsTestCases should print correct stats for exclude-with-loader 1`] = `
-"Hash: 574b1154129671ae12ac
+"Hash: 0871712eb36dbcf2b995
 Time: X ms
 Built at: 1970-04-20 12:42:42
     Asset      Size
-bundle.js  3.46 KiB  [emitted]  [name: main]
+bundle.js  3.73 KiB  [emitted]  [name: main]
  + 1 hidden asset
-Entrypoint main = bundle.js (5bcd36918d225eeda398ea3f372b7f16.json)
+Entrypoint main = bundle.js (89245aae14d2d745f85a29195aa6ffc1.json)
 ./index.js 77 bytes [built]
-./a.txt 41 bytes [built]
+./a.txt 42 bytes [built]
     + 6 hidden modules"
 `;
 
@@ -835,9 +835,9 @@ external \\"test\\" 42 bytes [built]"
 `;
 
 exports[`StatsTestCases should print correct stats for filter-warnings 1`] = `
-"Hash: 7763b48a6d4533935ca17763b48a6d4533935ca17763b48a6d4533935ca17763b48a6d4533935ca17763b48a6d4533935ca17763b48a6d4533935ca17763b48a6d4533935ca17763b48a6d4533935ca17763b48a6d4533935ca17763b48a6d4533935ca17763b48a6d4533935ca17763b48a6d4533935ca17763b48a6d4533935ca1
+"Hash: 73a3198368d23afbbd6573a3198368d23afbbd6573a3198368d23afbbd6573a3198368d23afbbd6573a3198368d23afbbd6573a3198368d23afbbd6573a3198368d23afbbd6573a3198368d23afbbd6573a3198368d23afbbd6573a3198368d23afbbd6573a3198368d23afbbd6573a3198368d23afbbd6573a3198368d23afbbd65
 Child undefined:
-    Hash: 7763b48a6d4533935ca1
+    Hash: 73a3198368d23afbbd65
     Time: X ms
     Built at: 1970-04-20 12:42:42
          Asset       Size
@@ -867,49 +867,49 @@ Child undefined:
     WARNING in Terser Plugin: Dropping unused function someUnUsedFunction5 [webpack://./index.js:12,0]
 
 Child Terser:
-    Hash: 7763b48a6d4533935ca1
+    Hash: 73a3198368d23afbbd65
     Time: X ms
     Built at: 1970-04-20 12:42:42
          Asset       Size
     bundle1.js  556 bytes  [emitted]  [name: main]
     Entrypoint main = bundle1.js
 Child /Terser/:
-    Hash: 7763b48a6d4533935ca1
+    Hash: 73a3198368d23afbbd65
     Time: X ms
     Built at: 1970-04-20 12:42:42
          Asset       Size
     bundle2.js  556 bytes  [emitted]  [name: main]
     Entrypoint main = bundle2.js
 Child warnings => true:
-    Hash: 7763b48a6d4533935ca1
+    Hash: 73a3198368d23afbbd65
     Time: X ms
     Built at: 1970-04-20 12:42:42
          Asset       Size
     bundle3.js  556 bytes  [emitted]  [name: main]
     Entrypoint main = bundle3.js
 Child [Terser]:
-    Hash: 7763b48a6d4533935ca1
+    Hash: 73a3198368d23afbbd65
     Time: X ms
     Built at: 1970-04-20 12:42:42
          Asset       Size
     bundle4.js  556 bytes  [emitted]  [name: main]
     Entrypoint main = bundle4.js
 Child [/Terser/]:
-    Hash: 7763b48a6d4533935ca1
+    Hash: 73a3198368d23afbbd65
     Time: X ms
     Built at: 1970-04-20 12:42:42
          Asset       Size
     bundle5.js  556 bytes  [emitted]  [name: main]
     Entrypoint main = bundle5.js
 Child [warnings => true]:
-    Hash: 7763b48a6d4533935ca1
+    Hash: 73a3198368d23afbbd65
     Time: X ms
     Built at: 1970-04-20 12:42:42
          Asset       Size
     bundle6.js  556 bytes  [emitted]  [name: main]
     Entrypoint main = bundle6.js
 Child should not filter:
-    Hash: 7763b48a6d4533935ca1
+    Hash: 73a3198368d23afbbd65
     Time: X ms
     Built at: 1970-04-20 12:42:42
          Asset       Size
@@ -939,7 +939,7 @@ Child should not filter:
     WARNING in Terser Plugin: Dropping unused function someUnUsedFunction5 [webpack://./index.js:12,0]
 
 Child /should not filter/:
-    Hash: 7763b48a6d4533935ca1
+    Hash: 73a3198368d23afbbd65
     Time: X ms
     Built at: 1970-04-20 12:42:42
          Asset       Size
@@ -969,7 +969,7 @@ Child /should not filter/:
     WARNING in Terser Plugin: Dropping unused function someUnUsedFunction5 [webpack://./index.js:12,0]
 
 Child warnings => false:
-    Hash: 7763b48a6d4533935ca1
+    Hash: 73a3198368d23afbbd65
     Time: X ms
     Built at: 1970-04-20 12:42:42
          Asset       Size
@@ -999,7 +999,7 @@ Child warnings => false:
     WARNING in Terser Plugin: Dropping unused function someUnUsedFunction5 [webpack://./index.js:12,0]
 
 Child [should not filter]:
-    Hash: 7763b48a6d4533935ca1
+    Hash: 73a3198368d23afbbd65
     Time: X ms
     Built at: 1970-04-20 12:42:42
           Asset       Size
@@ -1029,7 +1029,7 @@ Child [should not filter]:
     WARNING in Terser Plugin: Dropping unused function someUnUsedFunction5 [webpack://./index.js:12,0]
 
 Child [/should not filter/]:
-    Hash: 7763b48a6d4533935ca1
+    Hash: 73a3198368d23afbbd65
     Time: X ms
     Built at: 1970-04-20 12:42:42
           Asset       Size
@@ -1059,7 +1059,7 @@ Child [/should not filter/]:
     WARNING in Terser Plugin: Dropping unused function someUnUsedFunction5 [webpack://./index.js:12,0]
 
 Child [warnings => false]:
-    Hash: 7763b48a6d4533935ca1
+    Hash: 73a3198368d23afbbd65
     Time: X ms
     Built at: 1970-04-20 12:42:42
           Asset       Size
@@ -1461,34 +1461,32 @@ Entrypoint main = main.js
 `;
 
 exports[`StatsTestCases should print correct stats for module-assets 1`] = `
-"Hash: 09818c8e8ab4eb5fb372
+"Hash: b528a0ccced767ccc2ed
 Time: X ms
 Built at: 1970-04-20 12:42:42
   Asset       Size
   1.png     21 KiB  [emitted]  [name: (a)]
   2.png     21 KiB  [emitted]  [name: (a, b)]
-   a.js  988 bytes  [emitted]  [name: a]
-   b.js  616 bytes  [emitted]  [name: b]
-main.js   8.94 KiB  [emitted]  [name: main]
+   a.js  753 bytes  [emitted]  [name: a]
+   b.js  571 bytes  [emitted]  [name: b]
+main.js   8.01 KiB  [emitted]  [name: main]
 Entrypoint main = main.js
 Chunk Group a = a.js (1.png 2.png)
 Chunk Group b = b.js (2.png)
-chunk b.js (b) 69 bytes [rendered]
- ./node_modules/a/2.png 51 bytes [built] [1 asset]
+chunk b.js (b) 67 bytes [rendered]
+ ./node_modules/a/2.png 49 bytes [built] [1 asset]
  ./node_modules/b/index.js 18 bytes [built]
-chunk main.js (main) 82 bytes (javascript) 5.03 KiB (runtime) [entry] [rendered]
+chunk main.js (main) 82 bytes (javascript) 4.47 KiB (runtime) [entry] [rendered]
  ./index.js 82 bytes [built]
-     + 8 hidden chunk modules
-chunk a.js (a) 138 bytes [rendered]
- ./node_modules/a/1.png 51 bytes [built] [1 asset]
- ./node_modules/a/2.png 51 bytes [built] [1 asset]
- ./node_modules/a/index.js 36 bytes [built]
+     + 6 hidden chunk modules
+chunk a.js (a) 139 bytes [rendered]
+ ./node_modules/a/2.png 49 bytes [built] [1 asset]
+ ./node_modules/a/index.js + 1 modules 90 bytes [built] [1 asset]
 ./index.js 82 bytes [built]
-./node_modules/a/index.js 36 bytes [built]
+./node_modules/a/index.js + 1 modules 90 bytes [built] [1 asset]
 ./node_modules/b/index.js 18 bytes [built]
-./node_modules/a/1.png 51 bytes [built] [1 asset]
-./node_modules/a/2.png 51 bytes [built] [1 asset]
-    + 8 hidden modules"
+./node_modules/a/2.png 49 bytes [built] [1 asset]
+    + 6 hidden modules"
 `;
 
 exports[`StatsTestCases should print correct stats for module-deduplication 1`] = `
@@ -2475,13 +2473,12 @@ LOG from webpack.Compilation
 <t> record hash: X ms
 <t> module assets: X ms
 <t> create chunk assets: X ms
-<t> additional assets: X ms
-<t> optimize assets: X ms
-<t> finish assets: X ms
+<t> process assets: X ms
 
 LOG from webpack.SideEffectsFlagPlugin
 <t> capture reexports from modules: X ms
-<t> flatten reexports: X ms
+<t> flatten dynamic reexports: X ms
+<t> flatten static reexports: X ms
 <t> update imports: X ms
 
 LOG from webpack.FlagDependencyUsagePlugin
@@ -2731,6 +2728,60 @@ Entrypoint main = main.js
     [module unused]
     [inactive] harmony side effect evaluation ./CompC ./components/src/index.js 2:0-43
     + 7 hidden modules"
+`;
+
+exports[`StatsTestCases should print correct stats for side-effects-optimization 1`] = `
+"Hash: d7d1b4f45cd90d4abdb64369e7ea517dce8ffb09
+Child
+    Hash: d7d1b4f45cd90d4abdb6
+    Time: X ms
+    Built at: 1970-04-20 12:42:42
+      Asset       Size
+    main.js  207 bytes  [emitted]  [name: main]
+    Entrypoint main = main.js
+    ./index.js + 2 modules 1.18 KiB [built]
+        [no exports]
+        [no exports used]
+        ModuleConcatenation bailout: Cannot concat with ./node_modules/module-with-export/emptyModule.js (<- Module is not an ECMAScript module)
+        | ./node_modules/big-module/a.js 58 bytes [built]
+        |     [only some exports used: a]
+        | ./node_modules/module-with-export/index.js 1.01 KiB [built]
+        |     [only some exports used: smallVar]
+        | ./index.js 116 bytes [built]
+        |     [no exports]
+        |     [no exports used]
+    ./node_modules/module-with-export/emptyModule.js 43 bytes [built]
+        [only some exports used: huh]
+        ModuleConcatenation bailout: Module is not an ECMAScript module
+        + 2 hidden modules
+Child
+    Hash: 4369e7ea517dce8ffb09
+    Time: X ms
+    Built at: 1970-04-20 12:42:42
+              Asset      Size
+    main.no-side.js  1.37 KiB  [emitted]  [name: main]
+    Entrypoint main = main.no-side.js
+    ./index.js 116 bytes [built]
+        [no exports]
+        [no exports used]
+        ModuleConcatenation bailout: Cannot concat with ./node_modules/big-module/index.js (<- Module exports are unknown)
+        ModuleConcatenation bailout: Cannot concat with ./node_modules/module-with-export/index.js (<- Module exports are unknown)
+    ./node_modules/big-module/index.js 44 bytes [built]
+        [only some exports used: a, huh]
+        ModuleConcatenation bailout: Module exports are unknown
+    ./node_modules/module-with-export/index.js 1.01 KiB [built]
+        [only some exports used: a, huh, smallVar]
+        ModuleConcatenation bailout: Module exports are unknown
+    ./node_modules/big-module/a.js 58 bytes [built]
+        [only some exports used: a, huh]
+        ModuleConcatenation bailout: Module exports are unknown
+    ./node_modules/module-with-export/emptyModule.js 43 bytes [built]
+        [only some exports used: a, huh]
+        ModuleConcatenation bailout: Module is not an ECMAScript module
+    ./node_modules/big-module/log.js 92 bytes [built]
+        [only some exports used: a, huh]
+        ModuleConcatenation bailout: Module exports are unknown
+        + 4 hidden modules"
 `;
 
 exports[`StatsTestCases should print correct stats for side-effects-simple-unused 1`] = `
@@ -3785,7 +3836,7 @@ chunk default/async-a.js (async-a) 134 bytes <{179}> [rendered]
 `;
 
 exports[`StatsTestCases should print correct stats for tree-shaking 1`] = `
-"Hash: 4abb9dd9f28d864fe0ca
+"Hash: 0653813b0ee99f2a94bd
 Time: X ms
 Built at: 1970-04-20 12:42:42
     Asset      Size
@@ -3828,7 +3879,7 @@ require.include() is deprecated and will be removed soon.
 `;
 
 exports[`StatsTestCases should print correct stats for warnings-terser 1`] = `
-"Hash: 403266b01330f8535c18
+"Hash: 9d4799d2d13af78e55f1
 Time: X ms
 Built at: 1970-04-20 12:42:42
     Asset       Size
@@ -3862,7 +3913,7 @@ Built at: 1970-04-20 12:42:42
 256e72dd8b9a83a6e45b.module.wasm  120 bytes  [emitted] [immutable]
                    325.bundle.js   3.74 KiB  [emitted]
                    526.bundle.js  368 bytes  [emitted]              [id hint: vendors]
-                   780.bundle.js  526 bytes  [emitted]
+                   780.bundle.js  525 bytes  [emitted]
                     99.bundle.js  220 bytes  [emitted]
 a0e9dd97d7ced35a5b2c.module.wasm  154 bytes  [emitted] [immutable]
                        bundle.js     11 KiB  [emitted]              [name: main-1df31ce3]

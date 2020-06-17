@@ -18,22 +18,70 @@
         {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/Exposes"
+            "description": "Modules that should be exposed by this container.",
+            "anyOf": [
+              {
+                "$ref": "#/definitions/ExposesItem"
+              },
+              {
+                "$ref": "#/definitions/ExposesObject"
+              }
+            ]
           }
         },
         {
-          "description": "Request to a module that should be exposed by this container.",
-          "type": "string",
-          "minLength": 1
-        },
-        {
-          "description": "Requests to modules that should be exposed by this container. Property names are used as public names.",
-          "type": "object",
-          "additionalProperties": {
-            "$ref": "#/definitions/Exposes"
-          }
+          "$ref": "#/definitions/ExposesObject"
         }
       ]
+    },
+    "ExposesConfig": {
+      "description": "Advanced configuration for modules that should be exposed by this container.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "import": {
+          "description": "Request to a module that should be exposed by this container.",
+          "anyOf": [
+            {
+              "$ref": "#/definitions/ExposesItem"
+            },
+            {
+              "$ref": "#/definitions/ExposesItems"
+            }
+          ]
+        }
+      },
+      "required": ["import"]
+    },
+    "ExposesItem": {
+      "description": "Module that should be exposed by this container.",
+      "type": "string",
+      "minLength": 1
+    },
+    "ExposesItems": {
+      "description": "Modules that should be exposed by this container.",
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/ExposesItem"
+      }
+    },
+    "ExposesObject": {
+      "description": "Modules that should be exposed by this container. Property names are used as public paths.",
+      "type": "object",
+      "additionalProperties": {
+        "description": "Modules that should be exposed by this container.",
+        "anyOf": [
+          {
+            "$ref": "#/definitions/ExposesConfig"
+          },
+          {
+            "$ref": "#/definitions/ExposesItem"
+          },
+          {
+            "$ref": "#/definitions/ExposesItems"
+          }
+        ]
+      }
     },
     "LibraryCustomUmdCommentObject": {
       "description": "Set explicit comments for `commonjs`, `commonjs2`, `amd`, and `root`.",
@@ -173,29 +221,6 @@
         "system"
       ]
     },
-    "Overridables": {
-      "description": "Modules in this container that should be able to be overridden by the host. When provided, property name is used as override key, otherwise override key is automatically inferred from request.",
-      "anyOf": [
-        {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/Overridables"
-          }
-        },
-        {
-          "description": "Request to a module in this container that should be able to be overridden by the host. Override key is automatically inferred from request.",
-          "type": "string",
-          "minLength": 1
-        },
-        {
-          "description": "Requests to modules in this container that should be able to be overridden by the host. Property names are used as override keys.",
-          "type": "object",
-          "additionalProperties": {
-            "$ref": "#/definitions/Overridables"
-          }
-        }
-      ]
-    },
     "UmdNamedDefine": {
       "description": "If `output.libraryTarget` is set to umd and `output.library` is set, setting this to true will name the AMD module.",
       "type": "boolean"
@@ -211,17 +236,21 @@
     "filename": {
       "description": "The filename for this container relative path inside the `output.path` directory.",
       "type": "string",
-      "absolutePath": false
+      "absolutePath": false,
+      "minLength": 1
     },
     "library": {
       "$ref": "#/definitions/LibraryOptions"
     },
     "name": {
       "description": "The name for this container.",
-      "type": "string"
+      "type": "string",
+      "minLength": 1
     },
-    "overridables": {
-      "$ref": "#/definitions/Overridables"
+    "shareScope": {
+      "description": "The name of the share scope which is shared with the host (defaults to 'default').",
+      "type": "string",
+      "minLength": 1
     }
   },
   "required": ["name", "exposes"]

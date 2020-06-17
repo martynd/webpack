@@ -1,4 +1,4 @@
-/**
+/*
  * This file was automatically generated.
  * DO NOT MODIFY BY HAND.
  * Run `yarn special-lint-fix` to update
@@ -7,12 +7,15 @@
 /**
  * Modules that should be exposed by this container. When provided, property name is used as public name, otherwise public name is automatically inferred from request.
  */
-export type Exposes =
-	| Exposes[]
-	| string
-	| {
-			[k: string]: Exposes;
-	  };
+export type Exposes = (ExposesItem | ExposesObject)[] | ExposesObject;
+/**
+ * Module that should be exposed by this container.
+ */
+export type ExposesItem = string;
+/**
+ * Modules that should be exposed by this container.
+ */
+export type ExposesItems = ExposesItem[];
 /**
  * Add a comment in the UMD wrapper.
  */
@@ -49,15 +52,6 @@ export type LibraryType =
  * If `output.libraryTarget` is set to umd and `output.library` is set, setting this to true will name the AMD module.
  */
 export type UmdNamedDefine = boolean;
-/**
- * Modules in this container that should be able to be overridden by the host. When provided, property name is used as override key, otherwise override key is automatically inferred from request.
- */
-export type Overridables =
-	| Overridables[]
-	| string
-	| {
-			[k: string]: Overridables;
-	  };
 
 export interface ContainerPluginOptions {
 	/**
@@ -77,9 +71,27 @@ export interface ContainerPluginOptions {
 	 */
 	name: string;
 	/**
-	 * Modules in this container that should be able to be overridden by the host. When provided, property name is used as override key, otherwise override key is automatically inferred from request.
+	 * The name of the share scope which is shared with the host (defaults to 'default').
 	 */
-	overridables?: Overridables;
+	shareScope?: string;
+}
+/**
+ * Modules that should be exposed by this container. Property names are used as public paths.
+ */
+export interface ExposesObject {
+	/**
+	 * Modules that should be exposed by this container.
+	 */
+	[k: string]: ExposesConfig | ExposesItem | ExposesItems;
+}
+/**
+ * Advanced configuration for modules that should be exposed by this container.
+ */
+export interface ExposesConfig {
+	/**
+	 * Request to a module that should be exposed by this container.
+	 */
+	import: ExposesItem | ExposesItems;
 }
 /**
  * Options for library.

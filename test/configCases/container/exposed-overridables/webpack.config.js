@@ -7,9 +7,13 @@ module.exports = {
 			name: "container",
 			filename: "container.js",
 			exposes: {
-				Button: "./Button"
+				"./Button": "./Button"
 			},
-			shared: ["react"]
+			shared: {
+				react: {
+					eager: true
+				}
+			}
 		})
 	]
 };

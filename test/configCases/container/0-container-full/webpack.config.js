@@ -8,12 +8,16 @@ module.exports = {
 			library: { type: "commonjs-module" },
 			filename: "container.js",
 			exposes: {
-				ComponentA: "./ComponentA"
+				"./ComponentA": {
+					import: "./ComponentA"
+				}
 			},
 			remotes: {
-				containerA: "./container.js"
+				containerA: {
+					external: "./container.js"
+				}
 			},
-			shared: ["react"]
+			shared: { react: { version: false } }
 		})
 	]
 };

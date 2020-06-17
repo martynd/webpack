@@ -1,4 +1,4 @@
-/**
+/*
  * This file was automatically generated.
  * DO NOT MODIFY BY HAND.
  * Run `yarn special-lint-fix` to update
@@ -7,12 +7,15 @@
 /**
  * Modules that should be exposed by this container. When provided, property name is used as public name, otherwise public name is automatically inferred from request.
  */
-export type Exposes =
-	| Exposes[]
-	| string
-	| {
-			[k: string]: Exposes;
-	  };
+export type Exposes = (ExposesItem | ExposesObject)[] | ExposesObject;
+/**
+ * Module that should be exposed by this container.
+ */
+export type ExposesItem = string;
+/**
+ * Modules that should be exposed by this container.
+ */
+export type ExposesItems = ExposesItem[];
 /**
  * Add a comment in the UMD wrapper.
  */
@@ -50,23 +53,51 @@ export type LibraryType =
  */
 export type UmdNamedDefine = boolean;
 /**
+ * Specifies the default type of externals ('amd*', 'umd*', 'system' and 'jsonp' depend on output.libraryTarget set to the same value).
+ */
+export type ExternalsType =
+	| "var"
+	| "module"
+	| "assign"
+	| "this"
+	| "window"
+	| "self"
+	| "global"
+	| "commonjs"
+	| "commonjs2"
+	| "commonjs-module"
+	| "amd"
+	| "amd-require"
+	| "umd"
+	| "umd2"
+	| "jsonp"
+	| "system"
+	| "promise"
+	| "import";
+/**
  * Container locations and request scopes from which modules should be resolved and loaded at runtime. When provided, property name is used as request scope, otherwise request scope is automatically inferred from container location.
  */
-export type Remotes =
-	| Remotes[]
-	| string
-	| {
-			[k: string]: Remotes;
-	  };
+export type Remotes = (RemotesItem | RemotesObject)[] | RemotesObject;
 /**
- * Modules that should be shared with remotes and/or host. When provided, property name is used as shared key, otherwise shared key is automatically inferred from request.
+ * Container location from which modules should be resolved and loaded at runtime.
  */
-export type Shared =
-	| Shared[]
-	| string
-	| {
-			[k: string]: Shared;
-	  };
+export type RemotesItem = string;
+/**
+ * Container locations from which modules should be resolved and loaded at runtime.
+ */
+export type RemotesItems = RemotesItem[];
+/**
+ * Modules that should be shared in the share scope. When provided, property names are used to match requested modules in this compilation.
+ */
+export type Shared = (SharedItem | SharedObject)[] | SharedObject;
+/**
+ * A module that should be shared in the share scope.
+ */
+export type SharedItem = string;
+/**
+ * Version number as array. Numbers and strings are accepted. Strings are treated as tags, which only match exactly. Numbers can match higher numbers.
+ */
+export type SharedVersionArray = (number | string)[];
 
 export interface ModuleFederationPluginOptions {
 	/**
@@ -88,15 +119,37 @@ export interface ModuleFederationPluginOptions {
 	/**
 	 * The external type of the remote containers.
 	 */
-	remoteType?: LibraryType;
+	remoteType?: ExternalsType;
 	/**
 	 * Container locations and request scopes from which modules should be resolved and loaded at runtime. When provided, property name is used as request scope, otherwise request scope is automatically inferred from container location.
 	 */
 	remotes?: Remotes;
 	/**
-	 * Modules that should be shared with remotes and/or host. When provided, property name is used as shared key, otherwise shared key is automatically inferred from request.
+	 * Share scope name used for all shared modules (defaults to 'default').
+	 */
+	shareScope?: string;
+	/**
+	 * Modules that should be shared in the share scope. When provided, property names are used to match requested modules in this compilation.
 	 */
 	shared?: Shared;
+}
+/**
+ * Modules that should be exposed by this container. Property names are used as public paths.
+ */
+export interface ExposesObject {
+	/**
+	 * Modules that should be exposed by this container.
+	 */
+	[k: string]: ExposesConfig | ExposesItem | ExposesItems;
+}
+/**
+ * Advanced configuration for modules that should be exposed by this container.
+ */
+export interface ExposesConfig {
+	/**
+	 * Request to a module that should be exposed by this container.
+	 */
+	import: ExposesItem | ExposesItems;
 }
 /**
  * Options for library.
@@ -160,4 +213,72 @@ export interface LibraryCustomUmdObject {
 	 * Name of the property exposed globally by a UMD library.
 	 */
 	root?: string[] | string;
+}
+/**
+ * Container locations from which modules should be resolved and loaded at runtime. Property names are used as request scopes.
+ */
+export interface RemotesObject {
+	/**
+	 * Container locations from which modules should be resolved and loaded at runtime.
+	 */
+	[k: string]: RemotesConfig | RemotesItem | RemotesItems;
+}
+/**
+ * Advanced configuration for container locations from which modules should be resolved and loaded at runtime.
+ */
+export interface RemotesConfig {
+	/**
+	 * Container locations from which modules should be resolved and loaded at runtime.
+	 */
+	external: RemotesItem | RemotesItems;
+	/**
+	 * The name of the share scope shared with this remote.
+	 */
+	shareScope?: string;
+}
+/**
+ * Modules that should be shared in the share scope. Property names are used to match requested modules in this compilation. Relative requests are resolved, module requests are matched unresolved, absolute paths will match resolved requests. A trailing slash will match all requests with this prefix. In this case shareKey must also have a trailing slash.
+ */
+export interface SharedObject {
+	/**
+	 * Modules that should be shared in the share scope.
+	 */
+	[k: string]: SharedConfig | SharedItem;
+}
+/**
+ * Advanced configuration for modules that should be shared in the share scope.
+ */
+export interface SharedConfig {
+	/**
+	 * Include the provided and fallback module directly instead behind an async request. This allows to use this shared module in initial load too. All possible shared modules need to be eager too.
+	 */
+	eager?: boolean;
+	/**
+	 * Provided module that should be provided to share scope. Also acts as fallback module if no shared module is found in share scope or version isn't valid. Defaults to the property name.
+	 */
+	import?: false | SharedItem;
+	/**
+	 * Version requirement from module in share scope.
+	 */
+	requiredVersion?: string | SharedVersionArray;
+	/**
+	 * Module is looked up under this key from the share scope.
+	 */
+	shareKey?: string;
+	/**
+	 * Share scope name.
+	 */
+	shareScope?: string;
+	/**
+	 * Allow only a single version of the shared module in share scope (disabled by default).
+	 */
+	singleton?: boolean;
+	/**
+	 * Do not accept shared module if version is not valid (defaults to yes, if local fallback module is available and shared module is not a singleton, otherwise no, has no effect if there is no required version specified).
+	 */
+	strictVersion?: boolean;
+	/**
+	 * Version of the provided module. Will replace lower matching versions, but not higher.
+	 */
+	version?: false | string | SharedVersionArray;
 }

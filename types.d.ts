@@ -1,4 +1,4 @@
-/**
+/*
  * This file was automatically generated.
  * DO NOT MODIFY BY HAND.
  * Run `yarn special-lint-fix` to update
@@ -100,7 +100,7 @@ declare class AbstractLibraryPlugin<T> {
 	): void;
 	render(
 		source: Source,
-		renderContext: RenderContextJavascriptModulesPlugin,
+		renderContext: RenderContextObject,
 		libraryContext: LibraryContext<T>
 	): Source;
 	chunkHash(
@@ -129,12 +129,6 @@ declare class AggressiveSplittingPlugin {
 	apply(compiler: Compiler): void;
 	static wasChunkRecorded(chunk: Chunk): boolean;
 }
-
-/**
- * This file was automatically generated.
- * DO NOT MODIFY BY HAND.
- * Run `yarn special-lint-fix` to update
- */
 declare interface AggressiveSplittingPluginOptions {
 	/**
 	 * Extra cost for each chunk (Default: 9.8kiB).
@@ -510,6 +504,7 @@ declare class Chunk {
 	split(newChunk: Chunk): void;
 	updateHash(hash: Hash, chunkGraph: ChunkGraph): void;
 	getAllAsyncChunks(): Set<Chunk>;
+	getAllInitialChunks(): Set<Chunk>;
 	getAllReferencedChunks(): Set<Chunk>;
 	hasAsyncChunks(): boolean;
 	getChildIdsByOrders(
@@ -846,6 +841,11 @@ declare interface CodeGenerationResult {
 	sources: Map<string, Source>;
 
 	/**
+	 * the resulting data for all source types
+	 */
+	data?: Map<string, any>;
+
+	/**
 	 * the runtime requirements
 	 */
 	runtimeRequirements: ReadonlySet<string>;
@@ -954,14 +954,30 @@ declare class Compilation {
 		beforeModuleAssets: SyncHook<[], void>;
 		shouldGenerateChunkAssets: SyncBailHook<[], boolean>;
 		beforeChunkAssets: SyncHook<[], void>;
-		additionalChunkAssets: SyncHook<[Iterable<Chunk>], void>;
-		additionalAssets: AsyncSeriesHook<[]>;
-		optimizeChunkAssets: AsyncSeriesHook<[Iterable<Chunk>]>;
-		afterOptimizeChunkAssets: SyncHook<[Iterable<Chunk>], void>;
+		additionalChunkAssets: Pick<
+			AsyncSeriesHook<[Set<Chunk>]>,
+			"tap" | "tapAsync" | "tapPromise" | "name"
+		> &
+			FakeHookMarker;
+		additionalAssets: Pick<
+			AsyncSeriesHook<[]>,
+			"tap" | "tapAsync" | "tapPromise" | "name"
+		> &
+			FakeHookMarker;
+		optimizeChunkAssets: Pick<
+			AsyncSeriesHook<[Set<Chunk>]>,
+			"tap" | "tapAsync" | "tapPromise" | "name"
+		> &
+			FakeHookMarker;
+		afterOptimizeChunkAssets: Pick<
+			AsyncSeriesHook<[Set<Chunk>]>,
+			"tap" | "tapAsync" | "tapPromise" | "name"
+		> &
+			FakeHookMarker;
 		optimizeAssets: AsyncSeriesHook<[Record<string, Source>]>;
 		afterOptimizeAssets: SyncHook<[Record<string, Source>], void>;
-		finishAssets: AsyncSeriesHook<[Record<string, Source>]>;
-		afterFinishAssets: SyncHook<[Record<string, Source>], void>;
+		processAssets: AsyncSeriesHook<[Record<string, Source>]>;
+		afterProcessAssets: SyncHook<[Record<string, Source>], void>;
 		needAdditionalSeal: SyncBailHook<[], boolean>;
 		afterSeal: AsyncSeriesHook<[]>;
 		renderManifest: SyncWaterfallHook<
@@ -1014,6 +1030,7 @@ declare class Compilation {
 	 */
 	creatingModuleDuringBuild: WeakMap<Module, Set<Module>>;
 	entries: Map<string, EntryData>;
+	globalEntry: EntryData;
 	entrypoints: Map<string, Entrypoint>;
 	chunks: Set<Chunk>;
 	chunkGroups: ChunkGroup[];
@@ -1098,6 +1115,15 @@ declare class Compilation {
 			  >),
 		callback: (err?: WebpackError, result?: Module) => void
 	): void;
+	addInclude(
+		context: string,
+		dependency: Dependency,
+		options: { name: string } & Pick<
+			EntryDescriptionNormalized,
+			"filename" | "dependOn" | "library"
+		>,
+		callback: (err?: WebpackError, result?: Module) => void
+	): void;
 	rebuildModule(
 		module: Module,
 		callback: (err?: WebpackError, result?: Module) => void
@@ -1147,8 +1173,8 @@ declare class Compilation {
 		newSourceOrFunction: Source | ((arg0: Source) => Source),
 		assetInfoUpdateOrFunction?: AssetInfo | ((arg0: AssetInfo) => AssetInfo)
 	): void;
-	getAssets(): Asset[];
-	getAsset(name: string): Asset;
+	getAssets(): Readonly<Asset>[];
+	getAsset(name: string): Readonly<Asset>;
 	clearAssets(): void;
 	createModuleAssets(): void;
 	getRenderManifest(options: RenderManifestOptions): RenderManifestEntry[];
@@ -1181,27 +1207,87 @@ declare class Compilation {
 		plugins: Plugin[]
 	): Compiler;
 	checkConstraints(): void;
+
+	/**
+	 * Add additional assets to the compilation.
+	 */
+	static PROCESS_ASSETS_STAGE_ADDITIONAL: number;
+
+	/**
+	 * Basic preprocessing of assets.
+	 */
+	static PROCESS_ASSETS_STAGE_PRE_PROCESS: number;
+
+	/**
+	 * Derive new assets from existing assets.
+	 * Existing assets should not be treated as complete.
+	 */
+	static PROCESS_ASSETS_STAGE_DERIVED: number;
+
+	/**
+	 * Add additional sections to existing assets, like a banner or initialization code.
+	 */
+	static PROCESS_ASSETS_STAGE_ADDITIONS: number;
+
+	/**
+	 * Optimize existing assets in a general way.
+	 */
+	static PROCESS_ASSETS_STAGE_OPTIMIZE: number;
+
+	/**
+	 * Optimize the count of existing assets, e. g. by merging them.
+	 */
+	static PROCESS_ASSETS_STAGE_OPTIMIZE_COUNT: number;
+
+	/**
+	 * Optimize the compatibility of existing assets, e. g. add polyfills or vendor-prefixes.
+	 */
+	static PROCESS_ASSETS_STAGE_OPTIMIZE_COMPATIBILITY: number;
+
+	/**
+	 * Optimize the size of existing assets, e. g. by minimizing or omitting whitespace.
+	 */
+	static PROCESS_ASSETS_STAGE_OPTIMIZE_SIZE: number;
+
+	/**
+	 * Summarize the list of existing assets.
+	 * When creating new assets from this they should be fully optimized.
+	 * e. g. creating an assets manifest of Service Workers.
+	 */
+	static PROCESS_ASSETS_STAGE_SUMMARIZE: number;
+
+	/**
+	 * Add development tooling to assets, e. g. by extracting a SourceMap.
+	 */
+	static PROCESS_ASSETS_STAGE_DEV_TOOLING: number;
+
+	/**
+	 * Optimize the transfer of existing assets, e. g. by preparing a compressed (gzip) file as separate asset.
+	 */
+	static PROCESS_ASSETS_STAGE_OPTIMIZE_TRANSFER: number;
+
+	/**
+	 * Analyse existing assets.
+	 */
+	static PROCESS_ASSETS_STAGE_ANALYSE: number;
+
+	/**
+	 * Creating assets for reporting purposes.
+	 */
+	static PROCESS_ASSETS_STAGE_REPORT: number;
 }
 declare interface CompilationHooksAsyncWebAssemblyModulesPlugin {
-	renderModuleContent: SyncWaterfallHook<
-		[Source, Module, RenderContextAsyncWebAssemblyModulesPlugin]
-	>;
+	renderModuleContent: SyncWaterfallHook<[Source, Module, RenderContextObject]>;
 }
 declare interface CompilationHooksJavascriptModulesPlugin {
-	renderModuleContent: SyncWaterfallHook<
-		[Source, Module, RenderContextJavascriptModulesPlugin]
-	>;
+	renderModuleContent: SyncWaterfallHook<[Source, Module, RenderContextObject]>;
 	renderModuleContainer: SyncWaterfallHook<
-		[Source, Module, RenderContextJavascriptModulesPlugin]
+		[Source, Module, RenderContextObject]
 	>;
-	renderModulePackage: SyncWaterfallHook<
-		[Source, Module, RenderContextJavascriptModulesPlugin]
-	>;
-	renderChunk: SyncWaterfallHook<
-		[Source, RenderContextJavascriptModulesPlugin]
-	>;
-	renderMain: SyncWaterfallHook<[Source, RenderContextJavascriptModulesPlugin]>;
-	render: SyncWaterfallHook<[Source, RenderContextJavascriptModulesPlugin]>;
+	renderModulePackage: SyncWaterfallHook<[Source, Module, RenderContextObject]>;
+	renderChunk: SyncWaterfallHook<[Source, RenderContextObject]>;
+	renderMain: SyncWaterfallHook<[Source, RenderContextObject]>;
+	render: SyncWaterfallHook<[Source, RenderContextObject]>;
 	renderRequire: SyncWaterfallHook<[string, RenderBootstrapContext]>;
 	chunkHash: SyncHook<[Chunk, Hash, ChunkHashContext], void>;
 }
@@ -1351,7 +1437,7 @@ declare interface Configuration {
 	/**
 	 * Specifies the default type of externals ('amd*', 'umd*', 'system' and 'jsonp' depend on output.libraryTarget set to the same value).
 	 */
-	externalsType?: LibraryType;
+	externalsType?: ExternalsType;
 
 	/**
 	 * Options for infrastructure level logging.
@@ -1461,6 +1547,77 @@ declare interface Configuration {
 	 */
 	watchOptions?: WatchOptions;
 }
+declare class ConsumeSharedPlugin {
+	constructor(options: ConsumeSharedPluginOptions);
+
+	/**
+	 * Apply the plugin
+	 */
+	apply(compiler: Compiler): void;
+}
+
+/**
+ * Options for consuming shared modules.
+ */
+declare interface ConsumeSharedPluginOptions {
+	/**
+	 * Modules that should be consumed from share scope. When provided, property names are used to match requested modules in this compilation.
+	 */
+	consumes: Consumes;
+
+	/**
+	 * Share scope name used for all consumed modules (defaults to 'default').
+	 */
+	shareScope?: string;
+}
+type Consumes = (string | ConsumesObject)[] | ConsumesObject;
+
+/**
+ * Advanced configuration for modules that should be consumed from share scope.
+ */
+declare interface ConsumesConfig {
+	/**
+	 * Include the fallback module directly instead behind an async request. This allows to use fallback module in initial load too. All possible shared modules need to be eager too.
+	 */
+	eager?: boolean;
+
+	/**
+	 * Fallback module if no shared module is found in share scope. Defaults to the property name.
+	 */
+	import?: DevTool;
+
+	/**
+	 * Version requirement from module in share scope.
+	 */
+	requiredVersion?: string | (string | number)[];
+
+	/**
+	 * Module is looked up under this key from the share scope.
+	 */
+	shareKey?: string;
+
+	/**
+	 * Share scope name.
+	 */
+	shareScope?: string;
+
+	/**
+	 * Allow only a single version of the shared module in share scope (disabled by default).
+	 */
+	singleton?: boolean;
+
+	/**
+	 * Do not accept shared module if version is not valid (defaults to yes, if local fallback module is available and shared module is not a singleton, otherwise no, has no effect if there is no required version specified).
+	 */
+	strictVersion?: boolean;
+}
+
+/**
+ * Modules that should be consumed from share scope. Property names are used to match requested modules in this compilation. Relative requests are resolved, module requests are matched unresolved, absolute paths will match resolved requests. A trailing slash will match all requests with this prefix. In this case shareKey must also have a trailing slash.
+ */
+declare interface ConsumesObject {
+	[index: string]: string | ConsumesConfig;
+}
 declare class ContainerPlugin {
 	constructor(options: ContainerPluginOptions);
 
@@ -1473,7 +1630,7 @@ declare interface ContainerPluginOptions {
 	/**
 	 * Modules that should be exposed by this container. When provided, property name is used as public name, otherwise public name is automatically inferred from request.
 	 */
-	exposes: ExposesContainerPlugin;
+	exposes: Exposes;
 
 	/**
 	 * The filename for this container relative path inside the `output.path` directory.
@@ -1491,9 +1648,9 @@ declare interface ContainerPluginOptions {
 	name: string;
 
 	/**
-	 * Modules in this container that should be able to be overridden by the host. When provided, property name is used as override key, otherwise override key is automatically inferred from request.
+	 * The name of the share scope which is shared with the host (defaults to 'default').
 	 */
-	overridables?: Overridables;
+	shareScope?: string;
 }
 declare class ContainerReferencePlugin {
 	constructor(options: ContainerReferencePluginOptions);
@@ -1505,19 +1662,19 @@ declare class ContainerReferencePlugin {
 }
 declare interface ContainerReferencePluginOptions {
 	/**
-	 * Modules in this container that should override overridable modules in the remote container. When provided, property name is used as override key, otherwise override key is automatically inferred from request.
-	 */
-	overrides?: Overrides;
-
-	/**
 	 * The external type of the remote containers.
 	 */
-	remoteType: LibraryType;
+	remoteType: ExternalsType;
 
 	/**
 	 * Container locations and request scopes from which modules should be resolved and loaded at runtime. When provided, property name is used as request scope, otherwise request scope is automatically inferred from container location.
 	 */
-	remotes: RemotesContainerReferencePlugin;
+	remotes: Remotes;
+
+	/**
+	 * The name of the share scope shared with all remotes (defaults to 'default').
+	 */
+	shareScope?: string;
 }
 declare class ContextExclusionPlugin {
 	constructor(negativeMatcher: RegExp);
@@ -1758,12 +1915,6 @@ declare class DllPlugin {
 	 */
 	apply(compiler: Compiler): void;
 }
-
-/**
- * This file was automatically generated.
- * DO NOT MODIFY BY HAND.
- * Run `yarn special-lint-fix` to update
- */
 declare interface DllPluginOptions {
 	/**
 	 * Context of requests in the manifest file (defaults to the webpack context).
@@ -1937,9 +2088,14 @@ type Entry =
 	| [string, ...string[]];
 declare interface EntryData {
 	/**
-	 * dependencies of the entrypoint
+	 * dependencies of the entrypoint that should be evaluated at startup
 	 */
 	dependencies: Dependency[];
+
+	/**
+	 * dependencies of the entrypoint that should be included by not evaluated
+	 */
+	includeDependencies: Dependency[];
 
 	/**
 	 * options of the entrypoint
@@ -1958,7 +2114,7 @@ declare interface EntryDescription {
 	/**
 	 * The entrypoints that the current entrypoint depend on. They must be loaded when this entrypoint is loaded.
 	 */
-	dependOn?: string | [string, ...string[]];
+	dependOn?: EntryItem;
 
 	/**
 	 * Specifies the name of each output file on disk. You must **not** specify an absolute path here! The `output.path` option determines the location on disk the files are written to, filename is used solely for naming the individual files.
@@ -2154,7 +2310,7 @@ declare interface Experiments {
 declare class ExportInfo {
 	constructor(name: string, initFrom?: ExportInfo);
 	name: string;
-	usedName: string | typeof SKIP_OVER_NAME;
+	usedName: string;
 	used: 0 | 1 | 2 | 3 | 4;
 
 	/**
@@ -2181,7 +2337,11 @@ declare class ExportInfo {
 	exportsInfoOwned: boolean;
 	exportsInfo: ExportsInfo;
 	readonly canMangle: boolean;
-	getUsedName(fallbackName?: any): any;
+
+	/**
+	 * get used name
+	 */
+	getUsedName(fallbackName?: string): DevTool;
 	createNestedExportsInfo(): ExportsInfo;
 	getNestedExportsInfo(): ExportsInfo;
 	getUsedInfo():
@@ -2236,16 +2396,20 @@ declare class ExportsInfo {
 	getExportInfo(name: string): ExportInfo;
 	getReadOnlyExportInfo(name: string): ExportInfo;
 	getNestedExportsInfo(name?: string[]): ExportsInfo;
-	setUnknownExportsProvided(canMangle?: boolean): boolean;
+	setUnknownExportsProvided(
+		canMangle?: boolean,
+		excludeExports?: Set<string>
+	): boolean;
 	setUsedInUnknownWay(): boolean;
 	setAllKnownExportsUsed(): boolean;
 	setUsedForSideEffectsOnly(): boolean;
 	isUsed(): boolean;
 	getUsedExports(): any;
 	getProvidedExports(): true | string[];
-	isExportProvided(name: string | string[]): boolean;
-	isExportUsed(name: string | string[]): 0 | 1 | 2 | 3 | 4;
-	getUsedName(name: string | string[]): string | false | string[];
+	hasStaticExportsList(): boolean;
+	isExportProvided(name: LibraryExport): boolean;
+	isExportUsed(name: LibraryExport): 0 | 1 | 2 | 3 | 4;
+	getUsedName(name: LibraryExport): string | false | string[];
 	getRestoreProvidedData(): any;
 	restoreProvided(__0: {
 		otherProvided: any;
@@ -2260,6 +2424,11 @@ declare interface ExportsSpec {
 	exports: true | (string | ExportSpec)[];
 
 	/**
+	 * when exports = true, list of unaffected exports
+	 */
+	excludeExports?: Set<string>;
+
+	/**
 	 * can the export be renamed (defaults to true)
 	 */
 	canMangle?: boolean;
@@ -2269,14 +2438,24 @@ declare interface ExportsSpec {
 	 */
 	dependencies?: Module[];
 }
-type ExposesContainerPlugin =
-	| string
-	| ExposesContainerPlugin[]
-	| { [index: string]: ExposesContainerPlugin };
-type ExposesModuleFederationPlugin =
-	| string
-	| ExposesModuleFederationPlugin[]
-	| { [index: string]: ExposesModuleFederationPlugin };
+type Exposes = (string | ExposesObject)[] | ExposesObject;
+
+/**
+ * Advanced configuration for modules that should be exposed by this container.
+ */
+declare interface ExposesConfig {
+	/**
+	 * Request to a module that should be exposed by this container.
+	 */
+	import: string | string[];
+}
+
+/**
+ * Modules that should be exposed by this container. Property names are used as public paths.
+ */
+declare interface ExposesObject {
+	[index: string]: string | ExposesConfig | string[];
+}
 type Expression =
 	| UnaryExpression
 	| ThisExpression
@@ -2307,13 +2486,12 @@ type ExternalItem =
 	| RegExp
 	| { [index: string]: string | boolean | string[] | { [index: string]: any } }
 	| ((
-			context: string,
-			request: string,
+			data: { context: string; request: string },
 			callback: (err: Error, result: string) => void
 	  ) => void);
 declare class ExternalModule extends Module {
 	constructor(request?: any, type?: any, userRequest?: any);
-	request: string | string[] | Record<string, string | string[]>;
+	request: string | string[] | Record<string, LibraryExport>;
 	externalType: string;
 	userRequest: string;
 	getSourceString(
@@ -2328,20 +2506,38 @@ type Externals =
 	| ExternalItem[]
 	| { [index: string]: string | boolean | string[] | { [index: string]: any } }
 	| ((
-			context: string,
-			request: string,
+			data: { context: string; request: string },
 			callback: (err: Error, result: string) => void
 	  ) => void);
 declare class ExternalsPlugin {
-	constructor(type?: any, externals?: any);
-	type: any;
-	externals: any;
+	constructor(type: string, externals: Externals);
+	type: string;
+	externals: Externals;
 
 	/**
 	 * Apply the plugin
 	 */
 	apply(compiler: Compiler): void;
 }
+type ExternalsType =
+	| "var"
+	| "module"
+	| "assign"
+	| "this"
+	| "window"
+	| "self"
+	| "global"
+	| "commonjs"
+	| "commonjs2"
+	| "commonjs-module"
+	| "amd"
+	| "amd-require"
+	| "umd"
+	| "umd2"
+	| "jsonp"
+	| "system"
+	| "promise"
+	| "import";
 declare interface FactorizeModuleOptions {
 	currentProfile: ModuleProfile;
 	factory: ModuleFactory;
@@ -2349,6 +2545,7 @@ declare interface FactorizeModuleOptions {
 	originModule: Module;
 	context?: string;
 }
+declare interface FakeHookMarker {}
 declare interface FallbackCacheGroup {
 	minSize: Record<string, number>;
 	maxAsyncSize: Record<string, number>;
@@ -2567,12 +2764,6 @@ declare class HashedModuleIdsPlugin {
 	options: HashedModuleIdsPluginOptions;
 	apply(compiler?: any): void;
 }
-
-/**
- * This file was automatically generated.
- * DO NOT MODIFY BY HAND.
- * Run `yarn special-lint-fix` to update
- */
 declare interface HashedModuleIdsPluginOptions {
 	/**
 	 * The context directory for creating names.
@@ -2709,12 +2900,12 @@ declare class JavascriptModulesPlugin {
 	apply(compiler: Compiler): void;
 	renderModule(
 		module: Module,
-		renderContext: RenderContextJavascriptModulesPlugin,
+		renderContext: RenderContextObject,
 		hooks: CompilationHooksJavascriptModulesPlugin,
 		factory: boolean | "strict"
 	): Source;
 	renderChunk(
-		renderContext: RenderContextJavascriptModulesPlugin,
+		renderContext: RenderContextObject,
 		hooks: CompilationHooksJavascriptModulesPlugin
 	): Source;
 	renderMain(
@@ -3224,7 +3415,7 @@ declare class LibManifestPlugin {
 	 */
 	apply(compiler: Compiler): void;
 }
-type Library = string | LibraryOptions | string[] | LibraryCustomUmdObject;
+type Library = string | string[] | LibraryOptions | LibraryCustomUmdObject;
 declare interface LibraryContext<T> {
 	compilation: Compilation;
 	options: T;
@@ -3272,7 +3463,7 @@ declare interface LibraryCustomUmdObject {
 	/**
 	 * Name of the property exposed globally by a UMD library.
 	 */
-	root?: string | string[];
+	root?: LibraryExport;
 }
 type LibraryExport = string | string[];
 type LibraryName = string | string[] | LibraryCustomUmdObject;
@@ -3349,12 +3540,6 @@ declare class LimitChunkCountPlugin {
 	options: LimitChunkCountPluginOptions;
 	apply(compiler: Compiler): void;
 }
-
-/**
- * This file was automatically generated.
- * DO NOT MODIFY BY HAND.
- * Run `yarn special-lint-fix` to update
- */
 declare interface LimitChunkCountPluginOptions {
 	/**
 	 * Constant overhead for a chunk.
@@ -3392,12 +3577,6 @@ declare class LoaderOptionsPlugin {
 	 */
 	apply(compiler: Compiler): void;
 }
-
-/**
- * This file was automatically generated.
- * DO NOT MODIFY BY HAND.
- * Run `yarn special-lint-fix` to update
- */
 declare interface LoaderOptionsPluginOptions {
 	[index: string]: any;
 
@@ -3553,12 +3732,6 @@ declare class MinChunkSizePlugin {
 	 */
 	apply(compiler: Compiler): void;
 }
-
-/**
- * This file was automatically generated.
- * DO NOT MODIFY BY HAND.
- * Run `yarn special-lint-fix` to update
- */
 declare interface MinChunkSizePluginOptions {
 	/**
 	 * Constant overhead for a chunk.
@@ -3644,11 +3817,11 @@ declare class Module extends DependenciesBlock {
 	isModuleUsed(moduleGraph: ModuleGraph): boolean;
 	isExportUsed(
 		moduleGraph: ModuleGraph,
-		exportName: string | string[]
+		exportName: LibraryExport
 	): 0 | 1 | 2 | 3 | 4;
 	getUsedName(
 		moduleGraph: ModuleGraph,
-		exportName: string | string[]
+		exportName: LibraryExport
 	): string | false | string[];
 	needBuild(
 		context: NeedBuildContext,
@@ -3739,7 +3912,7 @@ declare interface ModuleFederationPluginOptions {
 	/**
 	 * Modules that should be exposed by this container. When provided, property name is used as public name, otherwise public name is automatically inferred from request.
 	 */
-	exposes?: ExposesModuleFederationPlugin;
+	exposes?: Exposes;
 
 	/**
 	 * The filename of the container as relative path inside the `output.path` directory.
@@ -3759,15 +3932,20 @@ declare interface ModuleFederationPluginOptions {
 	/**
 	 * The external type of the remote containers.
 	 */
-	remoteType?: LibraryType;
+	remoteType?: ExternalsType;
 
 	/**
 	 * Container locations and request scopes from which modules should be resolved and loaded at runtime. When provided, property name is used as request scope, otherwise request scope is automatically inferred from container location.
 	 */
-	remotes?: RemotesModuleFederationPlugin;
+	remotes?: Remotes;
 
 	/**
-	 * Modules that should be shared with remotes and/or host. When provided, property name is used as shared key, otherwise shared key is automatically inferred from request.
+	 * Share scope name used for all shared modules (defaults to 'default').
+	 */
+	shareScope?: string;
+
+	/**
+	 * Modules that should be shared in the share scope. When provided, property names are used to match requested modules in this compilation.
 	 */
 	shared?: Shared;
 }
@@ -3813,7 +3991,7 @@ declare class ModuleGraph {
 		module: Module
 	): (string | ((requestShortener: RequestShortener) => string))[];
 	getProvidedExports(module: Module): true | string[];
-	isExportProvided(module: Module, exportName: string | string[]): boolean;
+	isExportProvided(module: Module, exportName: LibraryExport): boolean;
 	getExportsInfo(module: Module): ExportsInfo;
 	getExportInfo(module: Module, exportName: string): ExportInfo;
 	getReadOnlyExportInfo(module: Module, exportName: string): ExportInfo;
@@ -3842,7 +4020,6 @@ declare class ModuleGraph {
 	static ModuleGraphConnection: typeof ModuleGraphConnection;
 	static ExportsInfo: typeof ExportsInfo;
 	static ExportInfo: typeof ExportInfo;
-	static SKIP_OVER_NAME: typeof SKIP_OVER_NAME;
 	static UsageState: Readonly<{
 		NoInfo: 0;
 		Unused: 1;
@@ -4133,6 +4310,16 @@ declare class NodeEnvironmentPlugin {
  */
 declare interface NodeOptions {
 	/**
+	 * Include a polyfill for the '__dirname' variable.
+	 */
+	__dirname?: boolean | "mock";
+
+	/**
+	 * Include a polyfill for the '__filename' variable.
+	 */
+	__filename?: boolean | "mock";
+
+	/**
 	 * Include a polyfill for the 'global' variable.
 	 */
 	global?: boolean;
@@ -4307,12 +4494,6 @@ declare class OccurrenceChunkIdsPlugin {
 	 */
 	apply(compiler: Compiler): void;
 }
-
-/**
- * This file was automatically generated.
- * DO NOT MODIFY BY HAND.
- * Run `yarn special-lint-fix` to update
- */
 declare interface OccurrenceChunkIdsPluginOptions {
 	/**
 	 * Prioritise initial size over total size.
@@ -4328,12 +4509,6 @@ declare class OccurrenceModuleIdsPlugin {
 	 */
 	apply(compiler: Compiler): void;
 }
-
-/**
- * This file was automatically generated.
- * DO NOT MODIFY BY HAND.
- * Run `yarn special-lint-fix` to update
- */
 declare interface OccurrenceModuleIdsPluginOptions {
 	/**
 	 * Prioritise initial size over total size.
@@ -4792,6 +4967,11 @@ declare interface Output {
 	iife?: boolean;
 
 	/**
+	 * The name of the native import() function (can be exchanged for a polyfill).
+	 */
+	importFunctionName?: string;
+
+	/**
 	 * The JSONP function used by webpack for async loading of chunks.
 	 */
 	jsonpFunction?: string;
@@ -4996,6 +5176,11 @@ declare interface OutputNormalized {
 	iife?: boolean;
 
 	/**
+	 * The name of the native import() function (can be exchanged for a polyfill).
+	 */
+	importFunctionName?: string;
+
+	/**
 	 * The JSONP function used by webpack for async loading of chunks.
 	 */
 	jsonpFunction?: string;
@@ -5055,20 +5240,6 @@ declare interface OutputNormalized {
 	 */
 	webassemblyModuleFilename?: string;
 }
-type Overridables = string | Overridables[] | { [index: string]: Overridables };
-declare class OverridablesPlugin {
-	constructor(options: OverridablesPluginOptions);
-
-	/**
-	 * Apply the plugin
-	 */
-	apply(compiler: Compiler): void;
-}
-type OverridablesPluginOptions =
-	| string
-	| OverridablesPluginOptions[]
-	| { [index: string]: OverridablesPluginOptions };
-type Overrides = string | Overrides[] | { [index: string]: Overrides };
 declare class Parser {
 	constructor();
 	parse(
@@ -5169,12 +5340,6 @@ declare class ProfilingPlugin {
 	apply(compiler?: any): void;
 	static Profiler: typeof Profiler;
 }
-
-/**
- * This file was automatically generated.
- * DO NOT MODIFY BY HAND.
- * Run `yarn special-lint-fix` to update
- */
 declare interface ProfilingPluginOptions {
 	/**
 	 * Path to the output file e.g. `path.resolve(__dirname, 'profiling/events.json')`. Defaults to `events.json`.
@@ -5260,13 +5425,65 @@ declare interface ProgressPluginOptions {
 	profile?: boolean;
 }
 declare class ProvidePlugin {
-	constructor(definitions: Record<string, string | string[]>);
-	definitions: Record<string, string | string[]>;
+	constructor(definitions: Record<string, LibraryExport>);
+	definitions: Record<string, LibraryExport>;
 
 	/**
 	 * Apply the plugin
 	 */
 	apply(compiler: Compiler): void;
+}
+declare class ProvideSharedPlugin {
+	constructor(options: ProvideSharedPluginOptions);
+
+	/**
+	 * Apply the plugin
+	 */
+	apply(compiler: Compiler): void;
+}
+declare interface ProvideSharedPluginOptions {
+	/**
+	 * Modules that should be provided as shared modules to the share scope. When provided, property name is used as share key, otherwise share key is automatically inferred from request.
+	 */
+	provides: Provides;
+
+	/**
+	 * Share scope name used for all provided modules (defaults to 'default').
+	 */
+	shareScope?: string;
+}
+type Provides = (string | ProvidesObject)[] | ProvidesObject;
+
+/**
+ * Advanced configuration for modules that should be provided as shared modules to the share scope.
+ */
+declare interface ProvidesConfig {
+	/**
+	 * Include the provided module directly instead behind an async request. This allows to use this shared module in initial load too. All possible shared modules need to be eager too.
+	 */
+	eager?: boolean;
+
+	/**
+	 * Request to a module that should be provided as shared module to the share scope.
+	 */
+	import: string;
+
+	/**
+	 * Share scope name.
+	 */
+	shareScope?: string;
+
+	/**
+	 * Version of the provided module. Will replace lower matching versions, but not higher.
+	 */
+	version?: string | false | (string | number)[];
+}
+
+/**
+ * Modules that should be provided as shared modules to the share scope. Property names are used as share keys.
+ */
+declare interface ProvidesObject {
+	[index: string]: string | ProvidesConfig;
 }
 type PublicPath =
 	| string
@@ -5295,14 +5512,29 @@ type RecursiveArrayOrRecord =
 	| RuntimeValue
 	| { [index: string]: RecursiveArrayOrRecord }
 	| RecursiveArrayOrRecord[];
-type RemotesContainerReferencePlugin =
-	| string
-	| RemotesContainerReferencePlugin[]
-	| { [index: string]: RemotesContainerReferencePlugin };
-type RemotesModuleFederationPlugin =
-	| string
-	| RemotesModuleFederationPlugin[]
-	| { [index: string]: RemotesModuleFederationPlugin };
+type Remotes = (string | RemotesObject)[] | RemotesObject;
+
+/**
+ * Advanced configuration for container locations from which modules should be resolved and loaded at runtime.
+ */
+declare interface RemotesConfig {
+	/**
+	 * Container locations from which modules should be resolved and loaded at runtime.
+	 */
+	external: string | string[];
+
+	/**
+	 * The name of the share scope shared with this remote.
+	 */
+	shareScope?: string;
+}
+
+/**
+ * Container locations from which modules should be resolved and loaded at runtime. Property names are used as request scopes.
+ */
+declare interface RemotesObject {
+	[index: string]: string | RemotesConfig | string[];
+}
 declare interface RenderBootstrapContext {
 	/**
 	 * the chunk
@@ -5329,68 +5561,6 @@ declare interface RenderBootstrapContext {
 	 */
 	hash: string;
 }
-declare interface RenderContextAsyncWebAssemblyModulesPlugin {
-	/**
-	 * the chunk
-	 */
-	chunk: any;
-
-	/**
-	 * the dependency templates
-	 */
-	dependencyTemplates: any;
-
-	/**
-	 * the runtime template
-	 */
-	runtimeTemplate: any;
-
-	/**
-	 * the module graph
-	 */
-	moduleGraph: any;
-
-	/**
-	 * the chunk graph
-	 */
-	chunkGraph: any;
-
-	/**
-	 * results of code generation
-	 */
-	codeGenerationResults: Map<Module, CodeGenerationResult>;
-}
-declare interface RenderContextJavascriptModulesPlugin {
-	/**
-	 * the chunk
-	 */
-	chunk: Chunk;
-
-	/**
-	 * the dependency templates
-	 */
-	dependencyTemplates: DependencyTemplates;
-
-	/**
-	 * the runtime template
-	 */
-	runtimeTemplate: RuntimeTemplate;
-
-	/**
-	 * the module graph
-	 */
-	moduleGraph: ModuleGraph;
-
-	/**
-	 * the chunk graph
-	 */
-	chunkGraph: ChunkGraph;
-
-	/**
-	 * results of code generation
-	 */
-	codeGenerationResults: Map<Module, CodeGenerationResult>;
-}
 declare interface RenderContextModuleTemplate {
 	/**
 	 * the chunk
@@ -5416,6 +5586,37 @@ declare interface RenderContextModuleTemplate {
 	 * the chunk graph
 	 */
 	chunkGraph: ChunkGraph;
+}
+declare interface RenderContextObject {
+	/**
+	 * the chunk
+	 */
+	chunk: Chunk;
+
+	/**
+	 * the dependency templates
+	 */
+	dependencyTemplates: DependencyTemplates;
+
+	/**
+	 * the runtime template
+	 */
+	runtimeTemplate: RuntimeTemplate;
+
+	/**
+	 * the module graph
+	 */
+	moduleGraph: ModuleGraph;
+
+	/**
+	 * the chunk graph
+	 */
+	chunkGraph: ChunkGraph;
+
+	/**
+	 * results of code generation
+	 */
+	codeGenerationResults: Map<Module, CodeGenerationResult>;
 }
 declare interface RenderManifestEntry {
 	render: () => Source;
@@ -5542,7 +5743,7 @@ declare interface ResolveOptions {
 	/**
 	 * Fields in the description file (usually package.json) which are used to redirect requests inside the module.
 	 */
-	aliasFields?: (string | string[])[];
+	aliasFields?: LibraryExport[];
 
 	/**
 	 * Enable caching of successfully resolved requests (cache entries are revalidated).
@@ -5582,7 +5783,7 @@ declare interface ResolveOptions {
 	/**
 	 * Field names from the description file (package.json) which are used to find the default entry point.
 	 */
-	mainFields?: (string | string[])[];
+	mainFields?: LibraryExport[];
 
 	/**
 	 * Filenames used to find the default entry point if there is no description file or main field.
@@ -5886,7 +6087,7 @@ declare class RuntimeModule extends Module {
 	getGeneratedCode(): string;
 }
 declare abstract class RuntimeTemplate {
-	outputOptions: Output;
+	outputOptions: OutputNormalized;
 	requestShortener: RequestShortener;
 	isIIFE(): boolean;
 	supportsConst(): boolean;
@@ -5972,7 +6173,7 @@ declare abstract class RuntimeTemplate {
 		/**
 		 * which kind of code should be returned
 		 */
-		type: "expression" | "promise" | "statements";
+		type: "promise" | "expression" | "statements";
 	}): string;
 	moduleId(__0: {
 		/**
@@ -6129,7 +6330,7 @@ declare abstract class RuntimeTemplate {
 		 * if set, will be filled with runtime requirements
 		 */
 		runtimeRequirements: Set<string>;
-	}): string;
+	}): [string, string];
 	exportFromImport(__0: {
 		/**
 		 * the module graph
@@ -6146,7 +6347,7 @@ declare abstract class RuntimeTemplate {
 		/**
 		 * the export name
 		 */
-		exportName: string | string[];
+		exportName: LibraryExport;
 		/**
 		 * the origin module
 		 */
@@ -6198,6 +6399,42 @@ declare abstract class RuntimeTemplate {
 		 */
 		runtimeRequirements: Set<string>;
 	}): string;
+	asyncModuleFactory(__0: {
+		/**
+		 * the async block
+		 */
+		block: AsyncDependenciesBlock;
+		/**
+		 * the chunk graph
+		 */
+		chunkGraph: ChunkGraph;
+		/**
+		 * if set, will be filled with runtime requirements
+		 */
+		runtimeRequirements: Set<string>;
+		/**
+		 * request string used originally
+		 */
+		request?: string;
+	}): string;
+	syncModuleFactory(__0: {
+		/**
+		 * the dependency
+		 */
+		dependency: Dependency;
+		/**
+		 * the chunk graph
+		 */
+		chunkGraph: ChunkGraph;
+		/**
+		 * if set, will be filled with runtime requirements
+		 */
+		runtimeRequirements: Set<string>;
+		/**
+		 * request string used originally
+		 */
+		request?: string;
+	}): string;
 	defineEsModuleFlagStatement(__0: {
 		/**
 		 * the name of the exports object
@@ -6214,7 +6451,6 @@ declare abstract class RuntimeValue {
 	fileDependencies: any;
 	exec(parser?: any): any;
 }
-declare const SKIP_OVER_NAME: unique symbol;
 declare interface ScopeInfo {
 	definitions: StackedMap<string, ScopeInfo | VariableInfo>;
 	topLevelScope: boolean | "arrow";
@@ -6230,7 +6466,82 @@ declare abstract class Serializer {
 	serialize(obj?: any, context?: any): any;
 	deserialize(value?: any, context?: any): any;
 }
-type Shared = string | Shared[] | { [index: string]: Shared };
+declare class SharePlugin {
+	constructor(options: SharePluginOptions);
+
+	/**
+	 * Apply the plugin
+	 */
+	apply(compiler: Compiler): void;
+}
+
+/**
+ * Options for shared modules.
+ */
+declare interface SharePluginOptions {
+	/**
+	 * Share scope name used for all shared modules (defaults to 'default').
+	 */
+	shareScope?: string;
+
+	/**
+	 * Modules that should be shared in the share scope. When provided, property names are used to match requested modules in this compilation.
+	 */
+	shared: Shared;
+}
+type Shared = (string | SharedObject)[] | SharedObject;
+
+/**
+ * Advanced configuration for modules that should be shared in the share scope.
+ */
+declare interface SharedConfig {
+	/**
+	 * Include the provided and fallback module directly instead behind an async request. This allows to use this shared module in initial load too. All possible shared modules need to be eager too.
+	 */
+	eager?: boolean;
+
+	/**
+	 * Provided module that should be provided to share scope. Also acts as fallback module if no shared module is found in share scope or version isn't valid. Defaults to the property name.
+	 */
+	import?: DevTool;
+
+	/**
+	 * Version requirement from module in share scope.
+	 */
+	requiredVersion?: string | (string | number)[];
+
+	/**
+	 * Module is looked up under this key from the share scope.
+	 */
+	shareKey?: string;
+
+	/**
+	 * Share scope name.
+	 */
+	shareScope?: string;
+
+	/**
+	 * Allow only a single version of the shared module in share scope (disabled by default).
+	 */
+	singleton?: boolean;
+
+	/**
+	 * Do not accept shared module if version is not valid (defaults to yes, if local fallback module is available and shared module is not a singleton, otherwise no, has no effect if there is no required version specified).
+	 */
+	strictVersion?: boolean;
+
+	/**
+	 * Version of the provided module. Will replace lower matching versions, but not higher.
+	 */
+	version?: string | false | (string | number)[];
+}
+
+/**
+ * Modules that should be shared in the share scope. Property names are used to match requested modules in this compilation. Relative requests are resolved, module requests are matched unresolved, absolute paths will match resolved requests. A trailing slash will match all requests with this prefix. In this case shareKey must also have a trailing slash.
+ */
+declare interface SharedObject {
+	[index: string]: string | SharedConfig;
+}
 declare class SideEffectsFlagPlugin {
 	constructor();
 
@@ -6474,7 +6785,7 @@ declare class Stats {
 	hasWarnings(): boolean;
 	hasErrors(): boolean;
 	toJson(options?: any): any;
-	toString(options?: any): any;
+	toString(options?: any): string;
 }
 declare abstract class StatsFactory {
 	hooks: Readonly<{
@@ -6799,15 +7110,15 @@ declare interface StatsOptions {
 }
 declare abstract class StatsPrinter {
 	hooks: Readonly<{
-		sortElements: HookMap<SyncBailHook<[string[], any], any>>;
-		printElements: HookMap<SyncBailHook<[PrintedElement[], any], any>>;
-		sortItems: HookMap<SyncBailHook<[any[], any], any>>;
-		getItemName: HookMap<SyncBailHook<[any, any], any>>;
-		printItems: HookMap<SyncBailHook<[string[], any], any>>;
-		print: HookMap<SyncBailHook<[any, any], any>>;
-		result: HookMap<SyncWaterfallHook<[string, any]>>;
+		sortElements: HookMap<SyncBailHook<[string[], {}], true>>;
+		printElements: HookMap<SyncBailHook<[PrintedElement[], {}], string>>;
+		sortItems: HookMap<SyncBailHook<[any[], {}], true>>;
+		getItemName: HookMap<SyncBailHook<[any, {}], string>>;
+		printItems: HookMap<SyncBailHook<[string[], {}], string>>;
+		print: HookMap<SyncBailHook<[{}, {}], string>>;
+		result: HookMap<SyncWaterfallHook<[string, {}]>>;
 	}>;
-	print(type?: any, object?: any, baseContext?: any): any;
+	print(type: string, object?: any, baseContext?: any): string;
 }
 type StatsValue =
 	| boolean
@@ -6848,9 +7159,9 @@ declare class Template {
 	static toPath(str: string): string;
 	static numberToIdentifier(n: number): string;
 	static numberToIdentifierContinuation(n: number): string;
-	static indent(s: string | string[]): string;
-	static prefix(s: string | string[], prefix: string): string;
-	static asString(str: string | string[]): string;
+	static indent(s: LibraryExport): string;
+	static prefix(s: LibraryExport, prefix: string): string;
+	static asString(str: LibraryExport): string;
 	static getModulesArrayBounds(modules: WithId[]): false | [number, number];
 	static renderChunkModules(
 		renderContext: RenderContextModuleTemplate,
@@ -6895,12 +7206,6 @@ declare class WatchIgnorePlugin {
 	 */
 	apply(compiler: Compiler): void;
 }
-
-/**
- * This file was automatically generated.
- * DO NOT MODIFY BY HAND.
- * Run `yarn special-lint-fix` to update
- */
 declare interface WatchIgnorePluginOptions {
 	/**
 	 * A list of RegExps or absolute paths to directories or files that should be ignored.
@@ -6920,7 +7225,7 @@ declare interface WatchOptions {
 	/**
 	 * Ignore some files from watching (glob pattern).
 	 */
-	ignored?: string | string[];
+	ignored?: LibraryExport;
 
 	/**
 	 * Enable polling mode for watching.
@@ -6947,7 +7252,7 @@ declare abstract class Watching {
 		/**
 		 * Ignore some files from watching (glob pattern).
 		 */
-		ignored?: string | string[];
+		ignored?: LibraryExport;
 		/**
 		 * Enable polling mode for watching.
 		 */
@@ -7076,7 +7381,7 @@ declare interface WebpackOptionsNormalized {
 	/**
 	 * Specifies the default type of externals ('amd*', 'umd*', 'system' and 'jsonp' depend on output.libraryTarget set to the same value).
 	 */
-	externalsType?: LibraryType;
+	externalsType?: ExternalsType;
 
 	/**
 	 * Options for infrastructure level logging.
@@ -7332,7 +7637,8 @@ declare namespace exports {
 		export let startupNoDefault: string;
 		export let interceptModuleExecution: string;
 		export let global: string;
-		export let overrides: string;
+		export let shareScopeMap: string;
+		export let initializeSharing: string;
 		export let getUpdateManifestFilename: string;
 		export let hmrDownloadManifest: string;
 		export let hmrDownloadUpdateHandlers: string;
@@ -7405,12 +7711,26 @@ declare namespace exports {
 		export { AbstractLibraryPlugin, EnableLibraryPlugin };
 	}
 	export namespace container {
+		export const scope: <T>(
+			scope: string,
+			options:
+				| Record<string, string | string[] | T>
+				| (string | Record<string, string | string[] | T>)[]
+		) => Record<string, string | string[] | T>;
 		export {
 			ContainerPlugin,
 			ContainerReferencePlugin,
-			ModuleFederationPlugin,
-			OverridablesPlugin
+			ModuleFederationPlugin
 		};
+	}
+	export namespace sharing {
+		export const scope: <T>(
+			scope: string,
+			options:
+				| Record<string, string | string[] | T>
+				| (string | Record<string, string | string[] | T>)[]
+		) => Record<string, string | string[] | T>;
+		export { ConsumeSharedPlugin, ProvideSharedPlugin, SharePlugin };
 	}
 	export namespace debug {
 		export { ProfilingPlugin };
